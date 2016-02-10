@@ -66,7 +66,7 @@ extern void luaL_assertfail(const char *file, int line, const char *message);
 
 //#define CLIENT_SSL_ENABLE
 //#define MD2_ENABLE
-#define SHA2_ENABLE
+// #define SHA2_ENABLE
 
 #define BUILD_SPIFFS
 #define SPIFFS_CACHE 1
