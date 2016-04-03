@@ -9,7 +9,7 @@ endif
 #
 
 FSSOURCE ?= ../local/fs/
-FLASHSIZE ?= 512k 4m
+FLASHSIZE ?= 4mb 32mb
 SUBDIRS = 
 
 #############################################################

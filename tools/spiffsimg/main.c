@@ -192,12 +192,22 @@ static size_t getsize(const char *s)
   size_t val = strtoul(s, &end, 0);
 
   if (end) {
+    int factor;
     if (*end == 'k' || *end == 'K') {
-      val = val << 10;
+      factor = 1 << 10;
+      end++;
+    } else if (*end == 'm' || *end == 'M') {
+      factor = 1 << 20;
+      end++;
+    } else {
+      factor = 1;
     }
-    if (*end == 'm' || *end == 'M') {
-      val = val << 20;
+    // Capital B is bytes
+    if (*end == 'B') {
+      factor = factor << 3;
     }
+    // we want bytes
+    val = (val * factor) / 8;
   }
 
   return val;
