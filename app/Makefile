@@ -25,6 +25,7 @@ SUBDIRS= 					\
 	user 					\
 	driver 					\
 	json 					\
+	pcm					\
 	platform 				\
 	libc 					\
 	lua 					\
@@ -71,6 +72,7 @@ COMPONENTS_eagle.app.v6 = 			\
 	user/libuser.a 				\
 	driver/libdriver.a 			\
 	json/libjson.a 				\
+	pcm/pcm.a				\
 	platform/libplatform.a 			\
 	task/libtask.a 				\
 	libc/liblibc.a 				\
