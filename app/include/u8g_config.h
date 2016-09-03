@@ -33,7 +33,7 @@
 
 #define U8G_DISPLAY_TABLE_ENTRY(device)
 #define U8G_DISPLAY_TABLE_I2C                           \
-    U8G_DISPLAY_TABLE_ENTRY(ssd1306_128x64_i2c)         \
+//    U8G_DISPLAY_TABLE_ENTRY(ssd1306_128x64_i2c)         \
 
 // SPI based displays go into here:
 //    U8G_DISPLAY_TABLE_ENTRY(ld7032_60x32_hw_spi)                \
@@ -72,7 +72,7 @@
 //    U8G_DISPLAY_TABLE_ENTRY(uc1701_mini12864_hw_spi)            \
 
 #define U8G_DISPLAY_TABLE_SPI                                   \
-    U8G_DISPLAY_TABLE_ENTRY(ssd1306_128x64_hw_spi)              \
+    U8G_DISPLAY_TABLE_ENTRY(pcd8544_84x48_hw_spi)
 
 #undef U8G_DISPLAY_TABLE_ENTRY
 //
