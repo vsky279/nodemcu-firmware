@@ -53,6 +53,7 @@
 static int ping_callback_ref; 
 static int ping_host_count;
 static ip_addr_t ping_host_ip;
+struct ping_option *ping_opt = NULL;
 
 void ping_received(void *arg, void *data) {
     // this would require change of the interface 
@@ -89,7 +90,11 @@ void ping_received(void *arg, void *data) {
 }
 
 static void ping_by_hostname(const char *name, ip_addr_t *ipaddr, void *arg) {
-    struct ping_option *ping_opt = (struct ping_option *)c_zalloc(sizeof(struct ping_option));
+    if (!ping_opt) {
+      ping_opt = (struct ping_option *)c_zalloc(sizeof(struct ping_option));
+    } else {
+      os_memset (ping_opt, 0, sizeof(struct ping_option));
+    }
 
     if (ipaddr == NULL) {
       c_printf("SEVERE problem resolving hostname - network and DNS accessible?\n");
@@ -137,7 +142,7 @@ static int net_info_ping(lua_State *L)
 {
     const char *ping_target;
     unsigned count = 4;
-
+     
     // retrieve address arg (mandatory)
     if (lua_isstring(L, 1)) {
         ping_target = luaL_checkstring(L, 1);
@@ -162,7 +167,12 @@ static int net_info_ping(lua_State *L)
     uint32 ip = ipaddr_addr(ping_target);
 
     if (ip != IPADDR_NONE) {
-        struct ping_option *ping_opt = (struct ping_option *)c_zalloc(sizeof(struct ping_option));
+        if (!ping_opt) {
+          ping_opt = (struct ping_option *)c_zalloc(sizeof(struct ping_option));
+        } else {
+          os_memset (ping_opt, 0, sizeof(struct ping_option));
+        }
+
 
         ping_opt->count = count;
         ping_opt->ip = ip;
@@ -170,7 +180,6 @@ static int net_info_ping(lua_State *L)
         ping_opt->recv_function = &ping_received;
         
         ping_start(ping_opt);
-        
     } else {
         ping_host_count = count;
 
