@@ -4,7 +4,7 @@
 #define LUA_USE_BUILTIN_STRING		// for string.xxx()
 #define LUA_USE_BUILTIN_TABLE		// for table.xxx()
 //#define LUA_USE_BUILTIN_COROUTINE	// for coroutine.xxx()
-//#define LUA_USE_BUILTIN_MATH		// for math.xxx(), partially work
+#define LUA_USE_BUILTIN_MATH		// for math.xxx(), partially work
 // #define LUA_USE_BUILTIN_IO 			// for io.xxx(), partially work
 
 // #define LUA_USE_BUILTIN_OS			// for os.xxx(), not work
@@ -22,7 +22,7 @@
 //#define LUA_USE_MODULES_ADXL345
 //#define LUA_USE_MODULES_AM2320
 //#define LUA_USE_MODULES_APA102
-// #define LUA_USE_MODULES_BIT
+#define LUA_USE_MODULES_BIT
 //#define LUA_USE_MODULES_BMP085
 //#define LUA_USE_MODULES_BME280
 //#define LUA_USE_MODULES_COAP
@@ -77,7 +77,7 @@
 //#define LUA_USE_MODULES_WPS
 //#define LUA_USE_MODULES_WS2801
 //#define LUA_USE_MODULES_WS2812
-//#define LUA_USE_MODULES_XPT2046
+#define LUA_USE_MODULES_XPT2046
 
 #endif  /* LUA_CROSS_COMPILER */
 #endif	/* __USER_MODULES_H__ */
