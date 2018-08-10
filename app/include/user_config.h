@@ -7,8 +7,8 @@
 // this out and enabling the explicitly size, e.g. FLASH_4M.  Valid sizes are
 // FLASH_512K, FLASH_1M, FLASH_2M, FLASH_4M, FLASH_8M, FLASH_16M.
 
-//#define FLASH_AUTOSIZE
-#define FLASH_4M
+#define FLASH_AUTOSIZE
+// #define FLASH_4M
 
 
 // The firmware now selects a baudrate of 115,200 by default, but the driver
@@ -66,7 +66,7 @@
 // LUA_FLASH_STORE defines the default partition size if the NodeMCU partition
 // tool is not used.
 
-//#define LUA_FLASH_STORE                   0x10000
+#define LUA_FLASH_STORE                   0x10000
 
 // By default Lua executes the file init.lua at start up.  The following
 // define allows you to replace this with an alternative startup.  Warning:
