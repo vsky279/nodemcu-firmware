@@ -45,7 +45,7 @@
 // the size of the store that you need.  This can be any multiple of 4kB up to
 // a maximum 256Kb.
 
-//#define LUA_FLASH_STORE 0x10000
+#define LUA_FLASH_STORE 0x10000
 
 
 // By default Lua executes the file init.lua at start up.  The following
