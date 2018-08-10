@@ -17,7 +17,7 @@
 // Can be removed when the script is adapted
 
 #ifndef BUILD_DATE
-#define BUILD_DATE		BUILDINFO_BUILD_DATE
+#define BUILD_DATE		__DATE__ " " __TIME__ //"unspecified"
 #endif
 
 extern char SDK_VERSION[];
