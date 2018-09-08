@@ -23,8 +23,8 @@
 //#define LUA_USE_MODULES_CRYPTO
 //#define LUA_USE_MODULES_DCC
 // #define LUA_USE_MODULES_DHT
-//#define LUA_USE_MODULES_ENCODER
-#define LUA_USE_MODULES_ENDUSER_SETUP // USE_DNS in dhcpserver.h needs to be enabled for this module to work.
+#define LUA_USE_MODULES_ENCODER
+// #define LUA_USE_MODULES_ENDUSER_SETUP // USE_DNS in dhcpserver.h needs to be enabled for this module to work.
 #define LUA_USE_MODULES_FILE
 //#define LUA_USE_MODULES_GDBSTUB
 #define LUA_USE_MODULES_GPIO
@@ -40,7 +40,7 @@
 // #define LUA_USE_MODULES_MQTT
 #define LUA_USE_MODULES_NET
 #define LUA_USE_MODULES_NODE
-// #define LUA_USE_MODULES_OW
+#define LUA_USE_MODULES_OW
 //#define LUA_USE_MODULES_PCM
 //#define LUA_USE_MODULES_PERF
 //#define LUA_USE_MODULES_PIPE
@@ -51,11 +51,11 @@
 //#define LUA_USE_MODULES_ROTARY
 //#define LUA_USE_MODULES_RTCFIFO
 #define LUA_USE_MODULES_RTCMEM
-#define LUA_USE_MODULES_RTCTIME
+// #define LUA_USE_MODULES_RTCTIME
 //#define LUA_USE_MODULES_SI7021
 //#define LUA_USE_MODULES_SIGMA_DELTA
 #define LUA_USE_MODULES_SJSON
-#define LUA_USE_MODULES_SNTP
+// #define LUA_USE_MODULES_SNTP
 //#define LUA_USE_MODULES_SOFTUART
 //#define LUA_USE_MODULES_SOMFY
 // #define LUA_USE_MODULES_SPI
