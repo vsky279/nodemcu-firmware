@@ -90,10 +90,10 @@
 // The SHA1 and MD5 function are implemented in the ROM BIOS. The MD2 and SHA2
 // are by firmware code, and can be enabled if you need this functionality.
 
-//#define CLIENT_SSL_ENABLE
+#define CLIENT_SSL_ENABLE
 //#define MD2_ENABLE
 #define SHA2_ENABLE
-#define SSL_BUFFER_SIZE 5120
+#define SSL_BUFFER_SIZE 5152 //5120
 
 
 // GPIO_INTERRUPT_ENABLE needs to be defined if your application uses the
