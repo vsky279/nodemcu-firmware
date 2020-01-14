@@ -7,8 +7,8 @@
 local modname = ...
 
 -- Used modules and functions
-local type, tostring, pcall, ipairs =
-      type, tostring, pcall, ipairs
+local type, tostring, pcall, ipairs, dofile =
+      type, tostring, pcall, ipairs, dofile
 -- Local functions
 local ow_setup, ow_search, ow_select, ow_read, ow_read_bytes, ow_write, ow_crc8,
         ow_reset, ow_reset_search, ow_skip, ow_depower =
@@ -16,7 +16,7 @@ local ow_setup, ow_search, ow_select, ow_read, ow_read_bytes, ow_write, ow_crc8,
         ow.reset, ow.reset_search, ow.skip, ow.depower
 
 local node_task_post, node_task_LOW_PRIORITY = node.task.post, node.task.LOW_PRIORITY
-local string_char, string_dump = string.char, string.dump
+local string_char, string_dump, string_sub = string.char, string.dump, string.sub
 local now, tmr_create, tmr_ALARM_SINGLE = tmr.now, tmr.create, tmr.ALARM_SINGLE
 local table_sort, table_concat = table.sort, table.concat
 local math_floor = math.floor
@@ -69,7 +69,7 @@ local function readout(self)
       -- the DS18B20 family has 4 fractional bits and the DS18S20s, 1 fractional bit
       t = ((t <= 32767) and t or t - 65536) *
           ((addr:byte(1) == DS18B20FAMILY) and 625 or 5000)
-      local crc, b9 = ow_crc8(string.sub(data,1,8)), data:byte(9)
+      local crc, b9 = ow_crc8(string_sub(data,1,8)), data:byte(9)
 
       if 1/2 == 0 then
         -- integer version
