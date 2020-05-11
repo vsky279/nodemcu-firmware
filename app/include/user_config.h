@@ -114,6 +114,10 @@ extern void luaL_assertfail(const char *file, int line, const char *message);
 #define WIFI_SDK_EVENT_MONITOR_ENABLE
 #define WIFI_EVENT_MONITOR_DISCONNECT_REASON_LIST_ENABLE
 
+// The net module optionally offers net info functionnality. Uncomment the following
+// to enable the functionnality.
+#define NET_PING_ENABLE 
+
 ////#define ENABLE_TIMER_SUSPEND
 //#define PMSLEEP_ENABLE
 

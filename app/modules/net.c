@@ -18,6 +18,8 @@
 #include "lwip/tcp.h"
 #include "lwip/udp.h"
 
+#include "net_ping.h"
+
 #if defined(CLIENT_SSL_ENABLE) && defined(LUA_USE_MODULES_NET) && defined(LUA_USE_MODULES_TLS)
 #define TLS_MODULE_PRESENT
 #endif
@@ -1014,6 +1016,9 @@ static const LUA_REG_TYPE net_map[] = {
   { LSTRKEY( "createUDPSocket" ),  LFUNCVAL( net_createUDPSocket ) },
   { LSTRKEY( "multicastJoin"),     LFUNCVAL( net_multicastJoin ) },
   { LSTRKEY( "multicastLeave"),    LFUNCVAL( net_multicastLeave ) },
+#ifdef NET_PING_ENABLE
+  { LSTRKEY( "ping"),    LFUNCVAL( net_ping ) },
+#endif
   { LSTRKEY( "dns" ),              LROVAL( net_dns_map ) },
 #ifdef TLS_MODULE_PRESENT
   { LSTRKEY( "cert" ),             LROVAL( tls_cert_map ) },
