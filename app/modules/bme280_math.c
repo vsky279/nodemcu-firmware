@@ -206,7 +206,7 @@ int bme280_lua_setup(lua_State* L) {
 
   config = ((!lua_isnumber(L, 6)?BME280_STANDBY_TIME_20_MS:(luaL_checkinteger(L, 6)&bit3))<< 5) // 5-th parameter: inactive duration in normal mode
     | ((!lua_isnumber(L, 7)?BME280_FILTER_COEFF_16:(luaL_checkinteger(L, 7)&bit3)) << 2); // 6-th parameter: IIR filter
-  // NODE_DBG("mode: %x\nhumidity oss: %x\nconfig: %x\n", bme280_mode, bme280_ossh, config);
+  NODE_DBG("mode: %x\nhumidity oss: %x\nconfig: %x\n", bme280_mode, bme280_ossh, config);
 
 #define r16uLE_buf(reg) (uint16_t)((reg[1] << 8) | reg[0])
 #define r16sLE_buf(reg)  (int16_t)(r16uLE_buf(reg))
@@ -240,18 +240,25 @@ int bme280_lua_setup(lua_State* L) {
     (*bme280_data).dig_H4 = (int16_t)reg[0] << 4 | (reg[1] & 0x0F); reg+=1;  // H4[11:4 3:0] = 0xE4[7:0] 0xE5[3:0] 12-bit signed
     (*bme280_data).dig_H5 = (int16_t)reg[1] << 4 | (reg[0]   >> 4); reg+=2;  // H5[11:4 3:0] = 0xE6[7:0] 0xE5[7:4] 12-bit signed
     (*bme280_data).dig_H6 = (int8_t)reg[0];
-    NODE_DBG("dig_H: %d\t%d\t%d\t%d\t%d\t%d\n", (*bme280_data).dig_H1, (*bme280_data).dig_H2, (*bme280_data).dig_H3, (*bme280_data).dig_H4, (*bme280_data).dig_H5, (*bme280_data).dig_H6);
+    // NODE_DBG("dig_H: %d\t%d\t%d\t%d\t%d\t%d\n", (*bme280_data).dig_H1, (*bme280_data).dig_H2, (*bme280_data).dig_H3, (*bme280_data).dig_H4, (*bme280_data).dig_H5, (*bme280_data).dig_H6);
   }
 #undef r16uLE_buf
 #undef r16sLE_buf
 
   int i = 1;
+  char cfg[2]={'\0', '\0'};
   lua_newtable(L);  /* configuration table */
-  lua_pushfstring(L, "%c", config);
+  // lua_pushfstring(L, "%c", config);
+  cfg[0]=(char)config;
+  lua_pushstring(L, cfg);
   lua_rawseti(L, -2, i++);
-  lua_pushfstring(L, "%c", bme280_ossh);
+  // lua_pushfstring(L, "%c", bme280_ossh);
+  cfg[0]=(char)bme280_ossh;
+  lua_pushstring(L, cfg);
   lua_rawseti(L, -2, i++);
-  lua_pushfstring(L, "%c", bme280_mode);
+  // lua_pushfstring(L, "%c", bme280_mode);
+  cfg[0]=(char)bme280_mode;
+  lua_pushstring(L, cfg);
   lua_rawseti(L, -2, i);
   return 2;
 }
@@ -272,6 +279,8 @@ int bme280_lua_read(lua_State* L) {
 
   uint8_t calc_qnh = lua_isnumber(L, 3);
 
+  // NODE_DBG("buf: %x %x %x %x %x %x %x %x\n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8]);
+  
   // Must do Temp first since bme280_t_fine is used by the other compensation functions
   uint32_t adc_T = (uint32_t)(((buf[3] << 16) | (buf[4] << 8) | buf[5]) >> 4);
   if (adc_T == 0x80000 || adc_T == 0xfffff)
@@ -279,7 +288,7 @@ int bme280_lua_read(lua_State* L) {
   lua_pushnumber(L, bme280_compensate_T(adc_T)/100.0);
 
   uint32_t adc_P = (uint32_t)(((buf[0] << 16) | (buf[1] << 8) | buf[2]) >> 4);
-  NODE_DBG("adc_P: %d\n", adc_P);
+  // NODE_DBG("adc_P: %d\n", adc_P);
   if (adc_P ==0x80000 || adc_P == 0xfffff) {
     lua_pushnil(L);
     calc_qnh = 0;
