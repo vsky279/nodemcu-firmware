@@ -1,4 +1,5 @@
 // Module for interfacing with file system
+// #define NODE_DEBUG
 
 #include "module.h"
 #include "lauxlib.h"
@@ -440,9 +441,11 @@ static int file_g_read( lua_State* L, int n, int16_t end_char, int fd )
   for (j = 0; j < n; j += sizeof(p)) {
     int nwanted = (n - j >= sizeof(p)) ? sizeof(p) : n - j;
     int nread   = vfs_read(fd, p, nwanted);
+    NODE_DBG("nwanted:%d, nread: %d, j: %d, n: %d\n", nwanted, nread, j, n);
 
     if (nread == VFS_RES_ERR || nread == 0) {
       if (j > 0) {
+        NODE_DBG("break: nread == VFS_RES_ERR || nread == 0\n");
         break;
       }
       lua_pushnil(L);
@@ -452,14 +455,18 @@ static int file_g_read( lua_State* L, int n, int16_t end_char, int fd )
     for (i = 0; i < nread; ++i) {
       luaL_addchar(&b, p[i]);
       if (p[i] == end_char) {
-        vfs_lseek(fd, -nread + j + i + 1, VFS_SEEK_CUR); //reposition after end char found
+        NODE_DBG("break: end_char found!\n");
+        NODE_DBG("seek by: %d, nread: %d, j: %d, i: %d\n",-nread + i + 1, nread, j, i); //+ j
+        vfs_lseek(fd, -nread + i + 1, VFS_SEEK_CUR); //reposition after end char found
         nread = 0;   // force break on outer loop
         break;
       }
     }
 
-    if (nread < nwanted)
+    if (nread < nwanted) {
+      NODE_DBG("break: nread < nwanted\n");
       break;
+    }
   }
   luaL_pushresult(&b);
   return 1;
