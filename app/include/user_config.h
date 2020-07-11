@@ -79,6 +79,7 @@
 // LUA_FLASH_STORE defines the default partition size if the NodeMCU partition
 // tool is not used.
 
+// #define LUA_FLASH_STORE                   0xc000
 #define LUA_FLASH_STORE                   0x10000
 
 // By default Lua executes the file init.lua at start up.  The following
@@ -88,7 +89,7 @@
 // The example provided executes the LFS module "_init" at startup or fails
 // through to the interactive prompt.
 
-//#define LUA_INIT_STRING "pcall(function() node.flashindex'_init'() end)"
+#define LUA_INIT_STRING "pcall(function() node.LFS.get'_init'() end)"
 
 
 // NodeMCU supports two file systems: SPIFFS and FATFS, the first is available
