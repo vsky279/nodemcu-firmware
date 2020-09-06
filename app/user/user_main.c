@@ -131,6 +131,9 @@ void user_pre_init(void) {
   // is where the cpu clock actually gets bumped to 80MHz.
     rtctime_early_startup ();
 #endif
+    REG_SET_BIT(0x3ff00014, BIT(0));
+    ets_update_cpu_frequency(SYS_CPU_160MHZ);
+      
     partition_item_t *rcr_pt = NULL, *pt;
     enum flash_size_map fs_size_code = system_get_flash_size_map();
 // Flash size lookup is SIZE_256K*2^N where N is as follows (see SDK/user_interface.h)
@@ -146,7 +149,7 @@ void user_pre_init(void) {
         os_printf("Flash size (%u) too small to support NodeMCU\n", flash_size);
         return;
     } else {
-        os_printf("system SPI FI size:%u, Flash size: %u\n", fs_size_code, flash_size );
+        // os_printf("system SPI FI size:%u, Flash size: %u\n", fs_size_code, flash_size );
     }
 
     pt = os_malloc_iram(i);  // We will work on and register a copy of the PT in iRAM
@@ -167,6 +170,7 @@ void user_pre_init(void) {
 
     // Now register the partition and return
     if( fs_size_code > 1 && system_partition_table_regist(pt, n, fs_size_code)) {
+        system_set_os_print(0);
         return;
     }
     os_printf("Invalid system partition table\n");
