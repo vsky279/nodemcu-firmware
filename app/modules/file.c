@@ -715,12 +715,7 @@ LROT_END(file, NULL, 0)
 
 
 int luaopen_file( lua_State *L ) {
-  int startup_option = platform_rcr_get_startup_option();
-  if ((startup_option & STARTUP_OPTION_DELAY_MOUNT) == 0) {
-      do_flash_mount();
-  } else {
-      myspiffs_set_automount(do_flash_mount);
-  }
+  myspiffs_set_automount(do_flash_mount);
   luaL_rometatable( L, "file.vol",  LROT_TABLEREF(file_vol));
   luaL_rometatable( L, "file.obj",  LROT_TABLEREF(file_obj));
   return 0;
