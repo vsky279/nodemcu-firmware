@@ -28,7 +28,7 @@
    of the code is skipped.
 ---------------------------------------------------------------------------------]]
 
-local index = node.flashindex
+local index = node.LFS.get
 local G=_ENV or getfenv()
 local lfs_t
 if _VERSION == 'Lua 5.1' then
@@ -87,12 +87,12 @@ end
 local lf, df = loadfile, dofile
 G.loadfile = function(n)
   local mod, ext = n:match("(.*)%.(l[uc]a?)");
-  local fn, ba   = index(mod)
-  if ba or (ext ~= 'lc' and ext ~= 'lua') then return lf(n) else return fn end
+  local fn = index(mod)
+  if fn then return fn else return lf(n) end
 end
 
 G.dofile = function(n)
   local mod, ext = n:match("(.*)%.(l[uc]a?)");
-  local fn, ba   = index(mod)
-  if ba or (ext ~= 'lc' and ext ~= 'lua') then return df(n) else return fn() end
+  local fn = index(mod)
+  if fn then return fn() else return df(n) end
 end
