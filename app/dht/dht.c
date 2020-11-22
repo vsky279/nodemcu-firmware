@@ -26,6 +26,7 @@
 //
 // Released to the public domain
 //
+// #define NODE_DEBUG
 
 #include "user_interface.h"
 #include "platform.h"
@@ -46,6 +47,7 @@ static double dht_humidity;
 static double dht_temperature;
 
 static uint8_t dht_bytes[5];  // buffer to receive data
+
 static int dht_readSensor(uint8_t pin, uint8_t wakeupDelay);
 
 /////////////////////////////////////////////////////
@@ -82,26 +84,26 @@ int dht_read_universal(uint8_t pin)
         return rv; // propagate error value
     }
 
-#if defined(DHT_DEBUG_BYTES)
+#if defined(NODE_DEBUG)
     int i;
     for (i = 0; i < 5; i++)
     {
-        DHT_DEBUG("%02X\n", dht_bytes[i]);
+        NODE_DBG("%x\t", dht_bytes[i]);
     }
-#endif // defined(DHT_DEBUG_BYTES)
+    NODE_DBG("\n");
+#endif // defined(NODE_DEBUG)
 
     // Assume it is DHT11
-    // If it is DHT11, both bit[1] and bit[3] is 0
+    // If it is DHT11, both temp and humidity's decimal
     if ((dht_bytes[1] == 0) && (dht_bytes[3] == 0))
     {
         // It may DHT11
         // CONVERT AND STORE
-        DHT_DEBUG("DHT11 method\n");
+        NODE_DBG("DHT11 method\n");
         dht_humidity    = dht_bytes[0];  // dht_bytes[1] == 0;
         dht_temperature = dht_bytes[2];  // dht_bytes[3] == 0;
 
         // TEST CHECKSUM
-        // dht_bytes[1] && dht_bytes[3] both 0
         uint8_t sum = dht_bytes[0] + dht_bytes[2];
         if (dht_bytes[4] != sum)
         {
@@ -118,7 +120,7 @@ int dht_read_universal(uint8_t pin)
 
     // Assume it is not DHT11
     // CONVERT AND STORE
-    DHT_DEBUG("DHTxx method\n");
+    NODE_DBG("DHTxx method\n");
     dht_humidity = (double)COMBINE_HIGH_AND_LOW_BYTE(dht_bytes[0], dht_bytes[1]) * 0.1;
     dht_temperature = (double)COMBINE_HIGH_AND_LOW_BYTE(dht_bytes[2] & 0x7F, dht_bytes[3]) * 0.1;
     if (dht_bytes[2] & 0x80)  // negative dht_temperature
@@ -156,7 +158,7 @@ int dht_read11(uint8_t pin)
 
     // TEST CHECKSUM
     // dht_bytes[1] && dht_bytes[3] both 0
-    uint8_t sum = dht_bytes[0] + dht_bytes[1] + dht_bytes[2] + dht_bytes[3];
+    uint8_t sum = dht_bytes[0] + dht_bytes[2];
     if (dht_bytes[4] != sum) return DHTLIB_ERROR_CHECKSUM;
 
     return DHTLIB_OK;
@@ -242,7 +244,7 @@ int dht_readSensor(uint8_t pin, uint8_t wakeupDelay)
     // volatile uint8_t *PIR = portInputRegister(port);
 
     // EMPTY BUFFER
-    for (i = 0; i < 5; i++) dht_bytes[i] = 0;
+    memset(dht_bytes, 0, sizeof(uint8_t)*5);
 
     // REQUEST SAMPLE
     // pinMode(pin, OUTPUT);
@@ -314,6 +316,7 @@ int dht_readSensor(uint8_t pin, uint8_t wakeupDelay)
 
     return DHTLIB_OK;
 }
+
 //
 // END OF FILE
 //
