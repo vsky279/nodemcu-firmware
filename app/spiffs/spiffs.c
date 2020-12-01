@@ -522,6 +522,7 @@ vfs_fs_fns *myspiffs_realm( const char *inname, char **outname, int set_current_
     automounter = NULL;
     mounter();
   }
+
   if (inname[0] == '/') {
     // logical drive is specified, check if it's our id
     if (0 == strncmp(inname + 1, MY_LDRV_ID, sizeof(MY_LDRV_ID)-1)) {

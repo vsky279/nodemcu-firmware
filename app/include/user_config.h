@@ -39,7 +39,7 @@
 // and good for development, it may be unwanted for non-interactive serial
 // devices.
 
-//#define DISABLE_STARTUP_BANNER
+#define DISABLE_STARTUP_BANNER
 
 
 // When using Lua 5.1, two different builds are now supported.
@@ -88,8 +88,7 @@
 // The example provided executes the LFS module "_init" at startup or fails
 // through to the interactive prompt.
 
-//#define LUA_INIT_STRING "pcall(function() node.flashindex'_init'() end)"
-
+#define LUA_INIT_STRING "pcall(function() node.LFS.get'_init'() end)"
 
 // NodeMCU supports two file systems: SPIFFS and FATFS, the first is available
 // on all ESP8266 modules.  The latter requires extra H/W so it is less common.
