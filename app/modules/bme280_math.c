@@ -178,12 +178,12 @@ double ln(double x) {
 uint32_t bme280_h = 0; // buffer last qfe2qnh calculation
 double bme280_hc = 1.0;
 
-double bme280_qfe2qnh(double qfe, double h) {
+double bme280_qfe2qnh(double qfe, double h, double t) {
   double hc;
   if (bme280_h == h) {
     hc = bme280_hc;
   } else {
-    hc = pow((double)(1.0 - 2.25577e-5 * h), (double)(-5.25588));
+    hc = pow(1.0 - (0.0065 * h)/(t+273.15+0.0065*h), -5.25612);
     bme280_hc = hc; bme280_h = h;
   }
   double qnh = (double)qfe * hc;
@@ -280,7 +280,8 @@ int bme280_lua_read(lua_State* L) {
   uint32_t adc_T = (uint32_t)(((buf[3] << 16) | (buf[4] << 8) | buf[5]) >> 4);
   if (adc_T == 0x80000 || adc_T == 0xfffff)
     return 0;
-  lua_pushnumber(L, bme280_compensate_T(adc_T)/100.0);
+  double t = bme280_compensate_T(adc_T)/100.0;
+  lua_pushnumber(L, t);
 
   uint32_t adc_P = (uint32_t)(((buf[0] << 16) | (buf[1] << 8) | buf[2]) >> 4);
   NODE_DBG("adc_P: %d\n", adc_P);
@@ -300,7 +301,7 @@ int bme280_lua_read(lua_State* L) {
 
   if (calc_qnh) { // have altitude
     int32_t h = luaL_checknumber(L, 3);
-    double qnh = bme280_qfe2qnh(qfe, h);
+    double qnh = bme280_qfe2qnh(qfe, h, t);
     lua_pushnumber (L, qnh);
     return 4;
   }
@@ -313,7 +314,8 @@ int bme280_lua_qfe2qnh(lua_State* L) {
   }
   double  qfe = luaL_checknumber(L, 1);
   double h = luaL_checknumber(L, 2);
-  double qnh = bme280_qfe2qnh(qfe, h);
+  double t = luaL_optnumber(L, 3, 15.0); // standard atmosphere otherwise
+  double qnh = bme280_qfe2qnh(qfe, h, t);
   lua_pushnumber(L, qnh);
   return 1;
 }
@@ -324,7 +326,9 @@ int bme280_lua_altitude(lua_State* L) {
   }
   double P = luaL_checknumber(L, 1);
   double qnh = luaL_checknumber(L, 2);
-  double h = (1.0 - pow((double)P/(double)qnh, 1.0/5.25588)) / 2.25577e-5;
+	int32_t t = luaL_optnumber(L, 3, 15.0); // standard atmosphere otherwise
+	double R = pow(P/qnh, 1.0/5.25612);
+	double h = (1 - R) * (t + 273.15) / (0.0065 * R);
   lua_pushnumber (L, h);
   return 1;
 }

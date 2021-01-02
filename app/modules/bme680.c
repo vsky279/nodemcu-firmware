@@ -309,12 +309,12 @@ static double ln(double x) {
 	return 2*y*r;
 }
 
-static double bme280_qfe2qnh(int32_t qfe, int32_t h) {
+static double bme280_qfe2qnh(int32_t qfe, int32_t h, int32_t t) {
 	double hc;
 	if (bme680_h == h) {
 		hc = bme680_hc;
 	} else {
-		hc = pow((double)(1.0 - 2.25577e-5 * h), (double)(-5.25588));
+		hc = pow(1.0 - (0.0065 * h)/(t/100.0+273.15+0.0065*h), -5.25612);
 		bme680_hc = hc; bme680_h = h;
 	}
 	double qnh = (double)qfe * hc;
@@ -508,7 +508,7 @@ static int bme680_lua_read(lua_State* L) {
 
 	if (calc_qnh) { // have altitude
 		int32_t h = luaL_checkinteger(L, 1);
-		double qnh = bme280_qfe2qnh(qfe, h);
+		double qnh = bme280_qfe2qnh(qfe, h, temp);
 		lua_pushinteger(L, (int32_t)(qnh + 0.5));
 		return 5;
 	}
@@ -516,32 +516,26 @@ static int bme680_lua_read(lua_State* L) {
 }
 
 static int bme680_lua_qfe2qnh(lua_State* L) {
-	if (!lua_isnumber(L, 2)) {
-		return luaL_error(L, "wrong arg range");
-	}
 	int32_t qfe = luaL_checkinteger(L, 1);
 	int32_t h = luaL_checkinteger(L, 2);
-	double qnh = bme280_qfe2qnh(qfe, h);
+	int32_t t = luaL_optinteger(L, 3, 1500); // standard atmosphere otherwise
+	double qnh = bme280_qfe2qnh(qfe, h, t);
 	lua_pushinteger(L, (int32_t)(qnh + 0.5));
 	return 1;
 }
 
 static int bme680_lua_altitude(lua_State* L) {
-	if (!lua_isnumber(L, 2)) {
-		return luaL_error(L, "wrong arg range");
-	}
 	int32_t P = luaL_checkinteger(L, 1);
 	int32_t qnh = luaL_checkinteger(L, 2);
-	double h = (1.0 - pow((double)P/(double)qnh, 1.0/5.25588)) / 2.25577e-5 * 100.0;
+	int32_t t = luaL_optinteger(L, 3, 1500); // standard atmosphere otherwise
+	double R = pow((double)P/qnh, 1.0/5.25612);
+	double h = (1 - R) * (t/100.0 + 273.15) / (0.0065 * R) * 100.0;
 
 	lua_pushinteger(L, (int32_t)(h + (((h<0)?-1:(h>0)) * 0.5)));
 	return 1;
 }
 
 static int bme680_lua_dewpoint(lua_State* L) {
-	if (!lua_isnumber(L, 2)) {
-		return luaL_error(L, "wrong arg range");
-	}
 	double H = luaL_checkinteger(L, 1)/100000.0;
 	double T = luaL_checkinteger(L, 2)/100.0;
 
