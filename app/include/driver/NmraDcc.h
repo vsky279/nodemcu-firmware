@@ -432,9 +432,10 @@ void pin( uint8_t ExtIntPinNum, uint8_t EnablePullup);
     #define CV_READ     11
     #define CV_WRITE    12
     #define CV_RESET    13
+    #define CV_ACK_COMPLETE    14
 
 
-    void dcc_setup(uint8_t pin, uint8_t ManufacturerId, uint8_t VersionId, uint8_t Flags, uint8_t OpsModeAddressBaseCV );
+    void dcc_setup(uint8_t pin, uint8_t ManufacturerId, uint8_t VersionId, uint8_t Flags, uint8_t OpsModeAddressBaseCV);
 
 
     void dcc_close();
@@ -647,7 +648,11 @@ extern void    notifyDccMsg( DCC_MSG * Msg ) __attribute__ ((weak));
  *    1         - CV is valid.
  *    0         - CV is not valid.
  */
+#ifdef NODEMCUDCC
+extern uint16_t notifyCVValid( uint16_t CV, uint8_t Writable ) __attribute__ ((weak));
+#else
 extern uint8_t notifyCVValid( uint16_t CV, uint8_t Writable ) __attribute__ ((weak));
+#endif
 
 /*+
  *  notifyCVRead()  Callback to read a CV.
@@ -661,10 +666,13 @@ extern uint8_t notifyCVValid( uint16_t CV, uint8_t Writable ) __attribute__ ((we
  *    CV        - CV number.
  *
  *  Returns:
- *    Value     - Value of the CV.
+ *    Value     - Value of the CV. Or a value > 255 to indicate error.
  */
+#ifdef NODEMCUDCC
+extern uint16_t notifyCVRead( uint16_t CV) __attribute__ ((weak));
+#else
 extern uint8_t notifyCVRead( uint16_t CV) __attribute__ ((weak));
-
+#endif
 /*+
  *  notifyCVWrite() Callback to write a value to a CV.
  *                  This is called when the library needs to write
@@ -678,11 +686,15 @@ extern uint8_t notifyCVRead( uint16_t CV) __attribute__ ((weak));
  *    Value     - Value of the CV.
  *
  *  Returns:
- *    Value     - Value of the CV.
+ *    Value     - Value of the CV. Or a value > 255 to signal error. 
  */
+#ifdef NODEMCUDCC
+extern uint16_t notifyCVWrite( uint16_t CV, uint8_t Value) __attribute__ ((weak));
+#else
 extern uint8_t notifyCVWrite( uint16_t CV, uint8_t Value) __attribute__ ((weak));
+#endif
 
-#ifndef NODEMCUDEV
+#ifndef NODEMCUDCC
 /*+
  *  notifyIsSetCVReady()  Callback to to determine if CVs can be written.
  *                        This is called when the library needs to determine
@@ -740,7 +752,6 @@ extern void    notifyDccCVChange( uint16_t CV, uint8_t Value) __attribute__ ((we
  */
 extern void    notifyCVResetFactoryDefault(void) __attribute__ ((weak));
 
-#ifndef NODEMCUDEV
 /*+
  *  notifyCVAck() Called when a CV write must be acknowledged.
  *                This callback must increase the current drawn by this
@@ -764,7 +775,6 @@ extern void    notifyCVAck(void) __attribute__ ((weak));
  *    None
  */
 extern void    notifyAdvancedCVAck(void) __attribute__ ((weak));
-#endif
 /*+
  *  notifyServiceMode(bool) Called when state of 'inServiceMode' changes
  *
@@ -776,12 +786,10 @@ extern void    notifyAdvancedCVAck(void) __attribute__ ((weak));
  */
 extern void    notifyServiceMode(bool) __attribute__ ((weak));
 
-#ifndef NODEMCUDEV
 // Deprecated, only for backward compatibility with version 1.4.2. 
 // Don't use in new designs. These functions may be dropped in future versions
 extern void notifyDccAccState( uint16_t Addr, uint16_t BoardAddr, uint8_t OutputAddr, uint8_t State ) __attribute__ ((weak));
 extern void notifyDccSigState( uint16_t Addr, uint8_t OutputIndex, uint8_t State) __attribute__ ((weak));
-#endif
 
 #if defined (__cplusplus)
 }

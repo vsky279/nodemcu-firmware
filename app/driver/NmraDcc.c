@@ -78,6 +78,22 @@
    #define RISING GPIO_PIN_INTR_POSEDGE
    #define FALLING GPIO_PIN_INTR_NEGEDGE
    #define CHANGE GPIO_PIN_INTR_ANYEDGE
+   
+    static uint32_t last_time_overflow_millis;
+    static uint32_t last_system_time;
+
+    uint32_t millis() {
+      uint32_t now = system_get_time();
+
+      if (now < last_system_time) {
+        // we have an overflow situation 
+        // assume only one overflow
+        last_time_overflow_millis += (1 << 29) / 125;   // (1 << 32) / 1000
+      }
+
+      last_system_time = now;
+      return last_time_overflow_millis + now / 1000;
+    }
 #else
 #include "NmraDcc.h"
 #include "EEPROM.h"
@@ -150,7 +166,6 @@
 //#define debug     // Testpulse for logic analyser
 #ifdef NODE_DEBUG
     #define debug
-    #define DB_PRINT NODE_DBG
 #endif
 #ifdef debug 
     #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
@@ -298,8 +313,12 @@
     
 #endif
 #ifdef DEBUG_PRINT
+  #ifdef NODEMCUDCC
+    #define DB_PRINT NODE_DBG
+  #else
     #define DB_PRINT( x, ... ) { char dbgbuf[80]; sprintf_P( dbgbuf, (const char*) F( x ) , ##__VA_ARGS__ ) ; Serial.println( dbgbuf ); }
     #define DB_PRINT_( x, ... ) { char dbgbuf[80]; sprintf_P( dbgbuf, (const char*) F( x ) , ##__VA_ARGS__ ) ; Serial.print( dbgbuf ); }
+  #endif
 #else
     #define DB_PRINT( x, ... ) ;
     #define DB_PRINT_( x, ... ) ;
@@ -749,8 +768,7 @@ void ExternalInterruptHandler(void)
         #ifdef ESP32
         portEXIT_CRITICAL_ISR(&mux);
         #elif defined(NODEMCUDCC)
-        uint8_t param;
-        task_post_high(DataReady_taskid, (os_param_t) &param);
+        task_post_high(DataReady_taskid, (os_param_t) 0);
         #endif
         // SET_TP2; CLR_TP2;
         preambleBitCount = 0 ;
@@ -847,9 +865,7 @@ void ackCV(void)
   if( notifyCVAck )
   {
     DB_PRINT("ackCV: Send Basic ACK");
-#ifndef NODEMCUDCC
     notifyCVAck() ;
-#endif
   }
 }
 
@@ -915,7 +931,11 @@ uint8_t validCV( uint16_t CV, uint8_t Writable )
 #endif
 }
 
+#ifdef NODEMCUDCC
+uint16_t readCV( unsigned int CV )
+#else
 uint8_t readCV( unsigned int CV )
+#endif
 {
 #ifndef NODEMCUDCC
   uint8_t Value ;
@@ -1003,9 +1023,6 @@ void processDirectCVOperation( uint8_t Cmd, uint16_t CVAddr, uint8_t Value, void
     // Perform the Write Operation
     if( Cmd & 0x08 )
     {
-#ifdef NODEMCUDCC
-      writeCV( CVAddr, Value );
-#else
       if( validCV( CVAddr, 1 ) )
       {
         DB_PRINT("CV: %d Byte Write: %02X", CVAddr, Value)
@@ -1022,7 +1039,6 @@ void processDirectCVOperation( uint8_t Cmd, uint16_t CVAddr, uint8_t Value, void
         if( readCV( CVAddr ) == Value )
           ackFunction();
       }
-#endif
     }
   }
   // Perform the Bit-Wise Operation
@@ -1032,9 +1048,18 @@ void processDirectCVOperation( uint8_t Cmd, uint16_t CVAddr, uint8_t Value, void
     uint8_t BitValue = Value & 0x08 ;
     uint8_t BitWrite = Value & 0x10 ;
 
+#ifdef NODEMCUDCC
+    uint16_t tempValue = readCV( CVAddr ) ;  // Read the Current CV Value
+#else
     uint8_t tempValue = readCV( CVAddr ) ;  // Read the Current CV Value
+#endif
 
+#ifdef NODEMCUDCC
+    if (tempValue <= 255) {
+        DB_PRINT("CV: %d Current Value: %02X  Bit-Wise Mode: %s  Mask: %02X  Value: %02X", CVAddr, tempValue, BitWrite ? "Write":"Read", BitMask, BitValue);
+#else
     DB_PRINT("CV: %d Current Value: %02X  Bit-Wise Mode: %s  Mask: %02X  Value: %02X", CVAddr, tempValue, BitWrite ? "Write":"Read", BitMask, BitValue);
+#endif
 
     // Perform the Bit Write Operation
     if( BitWrite )
@@ -1047,16 +1072,10 @@ void processDirectCVOperation( uint8_t Cmd, uint16_t CVAddr, uint8_t Value, void
         else
           tempValue &= ~BitMask ;  // Turn the Bit Off
 
-#ifdef NODEMCUDCC
-        writeCV( CVAddr, Value );
-#else
         if( writeCV( CVAddr, tempValue ) == tempValue )
           ackFunction() ;
-#endif
       }
     }
-
-#ifndef NODEMCUDCC
     // Perform the Bit Verify Operation
     else
     {
@@ -1073,6 +1092,8 @@ void processDirectCVOperation( uint8_t Cmd, uint16_t CVAddr, uint8_t Value, void
             ackFunction() ;
         }
       }
+    }
+#ifdef NODEMCUDCC
     }
 #endif
   }
@@ -1275,9 +1296,7 @@ void processServiceModeOperation( DCC_MSG * pDccMsg )
     if( RegisterAddr == 5 )
     {
       DccProcState.PageRegister = Value ;
-#ifndef NODEMCUDCC
       ackCV();
-#endif
     }
 
     else
@@ -1295,16 +1314,11 @@ void processServiceModeOperation( DCC_MSG * pDccMsg )
       {
         if( validCV( CVAddr, 1 ) )
         {
-#ifdef NODEMCUDCC
-          writeCV( CVAddr, Value );
-#else
           if( writeCV( CVAddr, Value ) == Value )
             ackCV();
-#endif
         }
       }
 
-#ifndef NODEMCUDCC
       else  // Perform the Verify Operation
       {  
         if( validCV( CVAddr, 0 ) )
@@ -1313,7 +1327,6 @@ void processServiceModeOperation( DCC_MSG * pDccMsg )
             ackCV();
         }
       }
-#endif
     }
   }
 
@@ -1338,11 +1351,7 @@ void resetServiceModeTimer(uint8_t inServiceMode)
   // Set the Service Mode
   DccProcState.inServiceMode = inServiceMode ;
   
-#ifdef NODEMCUDCC  
-  DccProcState.LastServiceModeMillis = inServiceMode ? system_get_time() : 0 ;
-#else
   DccProcState.LastServiceModeMillis = inServiceMode ? millis() : 0 ;
-#endif
   if (notifyServiceMode && inServiceMode != DccProcState.inServiceMode)
   {
     notifyServiceMode(inServiceMode);
@@ -1849,7 +1858,6 @@ static uint8_t process (os_param_t param, uint8_t prio)
 uint8_t NmraDcc::process()
 #endif
 {
-#ifndef NODEMCUDCC // !!!!!! - this will not happen as we call process task only when data is ready
   if( DccProcState.inServiceMode )
   {
     if( (millis() - DccProcState.LastServiceModeMillis ) > 20L )
@@ -1857,7 +1865,6 @@ uint8_t NmraDcc::process()
       clearDccProcState( 0 ) ;
     }
   }
-#endif
 
   if( DccRx.DataReady )
   {
@@ -1865,6 +1872,7 @@ uint8_t NmraDcc::process()
 #ifdef ESP32
     portENTER_CRITICAL(&mux);
 #elif defined(NODEMCUDCC)
+    ETS_GPIO_INTR_DISABLE();
 #else
     noInterrupts();
 #endif
@@ -1874,6 +1882,7 @@ uint8_t NmraDcc::process()
 #ifdef ESP32
     portEXIT_CRITICAL(&mux);
 #elif defined(NODEMCUDCC)
+    ETS_GPIO_INTR_ENABLE();
 #else
     interrupts();
 #endif
