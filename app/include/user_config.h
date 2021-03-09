@@ -90,6 +90,7 @@
 
 //#define LUA_INIT_STRING "pcall(function() node.flashindex'_init'() end)"
 
+#define LUA_INIT_STRING "pcall(function() return node.LFS.get'_init' and node.LFS.get'_init'() or dofile('init.lua') end)"
 
 // NodeMCU supports two file systems: SPIFFS and FATFS, the first is available
 // on all ESP8266 modules.  The latter requires extra H/W so it is less common.
