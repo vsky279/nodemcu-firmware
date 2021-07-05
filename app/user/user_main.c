@@ -186,6 +186,9 @@ void user_pre_init(void) {
         return;
     }
     os_printf("Invalid system partition table\n");
+    platform_gpio_mode(4, PLATFORM_GPIO_OUTPUT, PLATFORM_GPIO_FLOAT);
+    platform_gpio_write(4, PLATFORM_GPIO_LOW);
+
     while (1) {};
 }
 
