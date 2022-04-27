@@ -215,19 +215,27 @@ static int sun_lua_Potential(lua_State* L) {
     double d = mn + sec/SECDAY;
     double az = SolarAzimuth(d, lon);
     double el = SolarElevation(d, lon, lat, az);
-    double w1 = SphereVectorsAngle(az, el, orientation, declination);
-    w1 = (w1>-90 && w1<90)?cos(w1/ 360 * M_TWOPI):0;
+    double w1 = (el>=6)?SphereVectorsAngle(az, el, orientation, declination):90;
+    w1 = (w1>=-90 && w1<=90)?cos(w1/ 360 * M_TWOPI):0;
+    double IAM = (w1>0)?(1-0.052*(1/w1-1)):0; // ASHRAE
+    IAM = (IAM<=0)?0:IAM;
+    NODE_DBG("sun position: %d, %d, eff: %d, IAM: %d\n", (int)(az), (int)(el), (int)(w1 *100), (int)(IAM*100));
+    w1 = w1 * IAM;
     sec += delta;
     uint8_t aftersunrise = w1 > 0;
-    // NODE_DBG("%d, %d, %d, deltahour: %d\n", (int)potential, (int)w1 *100, aftersunrise, (int)(deltahour*100));
+    NODE_DBG("potential: %d, eff: %d, aftersunrise: %d, deltahour: %d\n", (int)potential, (int)w1 *100, aftersunrise, (int)(deltahour*100));
     while (sec<=end && (w1 > 0 || !aftersunrise)) {
         d = mn + sec/SECDAY;
         az = SolarAzimuth(d, lon);
         el = SolarElevation(d, lon, lat, az);
-        double w2 = SphereVectorsAngle(az, el, orientation, declination);
-        w2 = (w2>-90 && w2<90)?cos(w2/ 360 * M_TWOPI):0;
+        double w2 = (el>=6)?SphereVectorsAngle(az, el, orientation, declination):90;
+        w2 = (w2>=-90 && w2<=90)?cos(w2/ 360 * M_TWOPI):0;
+        IAM = (w2>0)?(1-0.052*(1/w2-1)):0; // ASHRAE
+        IAM = (IAM<=0)?0:IAM;
+        NODE_DBG("sun position: %d, %d, eff: %d, IAM: %d\n", (int)(az), (int)(el), (int)(w2 *100), (int)(IAM *100));
+        w2 = w2 * IAM;
         potential += MAX((w1 + (w2 - w1)/2) * coef - basalconsumption, 0) * deltahour;
-        // NODE_DBG("%d, %d, %d, %d\n", (int)potential, (int)(w1 *100), (int)(MAX((w1 + (w2 - w1)/2) * coef - basalconsumption, 0) * deltahour), aftersunrise);
+        NODE_DBG("potential: %d, eff: %d, potential+: %d, aftersunrise: %d\n", (int)potential, (int)(w1 *100), (int)(MAX((w1 + (w2 - w1)/2) * coef - basalconsumption, 0) * deltahour), aftersunrise);
         w1 = w2;
         aftersunrise |= (w1 > 0);
         sec += delta;
