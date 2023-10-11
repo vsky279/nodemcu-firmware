@@ -7,7 +7,7 @@
 // includes general purpose interface modules which require at most two GPIO pins.
 // See https://github.com/nodemcu/nodemcu-firmware/pull/1127 for discussions.
 // New modules should be disabled by default and added in alphabetical order.
-// #define LUA_USE_MODULES_ADC
+#define LUA_USE_MODULES_ADC
 //#define LUA_USE_MODULES_ADS1115
 //#define LUA_USE_MODULES_ADXL345
 //#define LUA_USE_MODULES_AM2320
@@ -32,7 +32,7 @@
 //#define LUA_USE_MODULES_GPIO_PULSE
 //#define LUA_USE_MODULES_HDC1080
 //#define LUA_USE_MODULES_HMC5883L
-//#define LUA_USE_MODULES_HTTP
+#define LUA_USE_MODULES_HTTP
 //#define LUA_USE_MODULES_HX711
 // #define LUA_USE_MODULES_I2C
 //#define LUA_USE_MODULES_L3G4200D
